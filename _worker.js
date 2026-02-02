@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker - Glass64 Pro (Full i18n & Navigation Fix)
+ * Cloudflare Worker - Glass64 Pro (Download & View Features)
  * 环境变量要求: DB (绑定到 D1 数据库)
  */
 
@@ -41,7 +41,6 @@ async function handleHtml(request, env) {
         [x-cloak] { display: none !important; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         
-        /* 网格背景 */
         .bg-grid-pattern {
             background-color: #ffffff;
             background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
@@ -77,6 +76,9 @@ async function handleHtml(request, env) {
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-white relative" x-data="app()">
@@ -89,14 +91,12 @@ async function handleHtml(request, env) {
                 <div class="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center font-bold text-lg">G</div>
                 <span class="text-xl font-bold tracking-tight text-slate-900 hidden sm:block" x-text="config.site_name"></span>
             </div>
-            
             <button @click="goHome()" class="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors" :title="t('back_home')">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 01-1 1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
             </button>
         </div>
 
         <div class="flex items-center gap-3">
-            
             <a href="https://github.com/lijboys/Img-C-Base64" target="_blank" 
                class="hidden md:flex items-center gap-3 bg-[#111] hover:bg-black text-white px-4 py-1.5 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 group">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
@@ -230,8 +230,19 @@ async function handleHtml(request, env) {
                             
                             <div x-show="base64Input" class="mt-6 border border-gray-200 rounded-xl p-6 text-center bg-white" x-transition>
                                 <p class="text-xs text-gray-400 mb-4 uppercase font-bold tracking-wider" x-text="t('preview')"></p>
-                                <div class="inline-block relative shadow-lg rounded-lg overflow-hidden bg-checkerboard">
+                                <div class="inline-block relative shadow-lg rounded-lg overflow-hidden bg-checkerboard mb-6">
                                     <img :src="formattedBase64" class="max-w-full max-h-[400px] block object-contain">
+                                </div>
+                                
+                                <div class="flex justify-center gap-4">
+                                    <a :href="formattedBase64" download="image.png" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-bold text-sm shadow-md active:scale-95">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        <span x-text="t('download')"></span>
+                                    </a>
+                                    <button @click="showImage(formattedBase64)" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg transition-all font-bold text-sm shadow-sm active:scale-95">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                                        <span x-text="t('view_image')"></span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -265,7 +276,7 @@ async function handleHtml(request, env) {
                                         <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1" x-text="t('label_bg_url')"></label>
                                         <input type="text" x-model="adminConfig.bg_url" placeholder="https://..." class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-mono text-gray-600 mb-2 outline-none focus:border-blue-500 transition-colors">
                                         <div x-show="adminConfig.bg_url" class="mt-2 text-center">
-                                            <div class="inline-block relative group cursor-pointer" @click="showBgPreview = true">
+                                            <div class="inline-block relative group cursor-pointer" @click="showImage(adminConfig.bg_url)">
                                                 <div class="w-[150px] h-[150px] mx-auto rounded-xl overflow-hidden border-2 border-white shadow-lg bg-gray-100">
                                                     <img :src="adminConfig.bg_url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                                                 </div>
@@ -340,12 +351,14 @@ async function handleHtml(request, env) {
         </div>
     </div>
 
-    <div x-show="showBgPreview" x-cloak class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" @click="showBgPreview = false">
-        <img :src="adminConfig.bg_url" class="max-w-full max-h-[90vh] rounded shadow-2xl">
+    <div x-show="showModal" x-cloak class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" @click="showModal = false">
+        <img :src="modalImageUrl" class="max-w-full max-h-[90vh] rounded shadow-2xl transition-transform" @click.stop>
+        <button class="absolute top-6 right-6 text-white hover:text-gray-300">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
     </div>
 
     <script>
-        // 完整的国际化字典
         const i18n = {
             zh: {
                 star_on_github: '在 GitHub 上加星',
@@ -365,6 +378,8 @@ async function handleHtml(request, env) {
                 base64_output: 'Base64 结果',
                 length: '长度',
                 preview: '预览结果',
+                download: '下载图片',
+                view_image: '查看大图',
                 stat_total: '总转换次数',
                 stat_ip: '今日验证 IP',
                 admin_panel: '系统配置',
@@ -378,8 +393,8 @@ async function handleHtml(request, env) {
                 settings_account: '账户设置',
                 label_new_pass: '修改管理员密码',
                 placeholder_pass: '留空则不修改',
-                settings_turnstile: 'CF小组件验证', // 特殊修改
-                enable_turnstile: '开启 CF 小组件验证', // 特殊修改
+                settings_turnstile: 'CF小组件验证',
+                enable_turnstile: '开启 CF 小组件验证',
                 site_key: 'Site Key',
                 secret_key: 'Secret Key',
                 verify_mode: '验证频率',
@@ -406,6 +421,8 @@ async function handleHtml(request, env) {
                 base64_output: 'Base64 Output',
                 length: 'Length',
                 preview: 'Preview',
+                download: 'Download',
+                view_image: 'View Image',
                 stat_total: 'Total Conversions',
                 stat_ip: 'Verified IPs Today',
                 admin_panel: 'Configuration',
@@ -451,7 +468,9 @@ async function handleHtml(request, env) {
                 loginPassword: '',
                 savedPassword: '',
                 saving: false,
-                showBgPreview: false,
+                // 新增：通用模态框状态
+                showModal: false,
+                modalImageUrl: '',
                 stats: {},
                 
                 config: ${JSON.stringify(config)},
@@ -464,6 +483,13 @@ async function handleHtml(request, env) {
                 toggleLang() {
                     this.lang = this.lang === 'zh' ? 'en' : 'zh';
                     this.copyBtnText = this.lang === 'zh' ? '复制' : 'Copy';
+                },
+
+                // 通用图片查看器
+                showImage(url) {
+                    if (!url) return;
+                    this.modalImageUrl = url;
+                    this.showModal = true;
                 },
 
                 get formattedBase64() {
@@ -487,13 +513,11 @@ async function handleHtml(request, env) {
                     this.copyBtnText = this.lang === 'zh' ? '复制' : 'Copy';
                 },
 
-                // 切换到前台（保持登录）
                 goHome() {
                     this.isAdminMode = false;
                     window.history.pushState({}, '', '/');
                 },
 
-                // 彻底退出登录
                 logout() {
                     localStorage.removeItem('admin_pass_cache');
                     this.hasLocalAdmin = false;
@@ -703,7 +727,13 @@ async function handleApi(request, env) {
         const buffer = await imgRes.arrayBuffer();
         if (buffer.byteLength > 20 * 1024 * 1024) throw new Error('Image too large (>20MB)');
         
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        const chunkSize = 8192;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+        }
+        const base64 = btoa(binary);
         const type = imgRes.headers.get('content-type') || 'image/png';
         return Response.json({ base64: `data:${type};base64,${base64}` });
     } catch(e) {
