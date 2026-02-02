@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker - Base64 Pro (Final Polished Version)
+ * Cloudflare Worker - Base64 Pro (Floating Cat Ball Edition)
  * 环境变量要求: DB (绑定到 D1 数据库)
  */
 
@@ -8,12 +8,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // API 路由分发
     if (path.startsWith('/api/')) {
       return handleApi(request, env);
     }
 
-    // 页面路由
     if (path === '/' || path === '/admin') {
       return handleHtml(request, env);
     }
@@ -85,6 +83,14 @@ async function handleHtml(request, env) {
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
+        
+        /* 浮动动画 */
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0px); }
+        }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col relative transition-all duration-700 ease-in-out overflow-hidden"
@@ -92,216 +98,229 @@ async function handleHtml(request, env) {
       x-data="app()">
 
     <div class="absolute inset-0 bg-gradient-to-br from-slate-900/40 to-black/50 z-0 pointer-events-none"></div>
+    
+    <a href="https://github.com/lijboys/img-Glass64" target="_blank" 
+       class="fixed z-[100] top-4 right-4 md:top-6 md:right-6 w-11 h-11 md:w-14 md:h-14 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-2xl border border-white/60 transition-all duration-300 hover:scale-110 hover:rotate-12 group cursor-pointer float-anim"
+       title="Star on GitHub">
+        <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/40 to-transparent pointer-events-none"></div>
+        <svg class="w-6 h-6 md:w-8 md:h-8 text-gray-800 group-hover:text-black transition-colors" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path>
+        </svg>
+    </a>
 
-    <main class="relative z-10 flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
-        <div class="glass-card w-full max-w-4xl rounded-3xl p-6 md:p-10 transition-all duration-300 transform"
-             :style="'--opacity: ' + config.card_opacity">
+    <main class="relative z-10 flex-1 overflow-y-auto w-full">
+        <div class="min-h-full w-full flex items-center justify-center p-4 py-16 md:py-10">
             
-            <header class="flex justify-between items-center mb-8 select-none">
-                <div class="flex items-center gap-3 cursor-pointer group" @click="handleTitleClick()">
-                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900 tracking-tight" x-text="config.site_name"></h1>
-                        <p class="text-xs text-gray-500 font-medium">Cloudflare Worker Powered</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <span x-show="isAdminMode" class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full border border-blue-200 animate-pulse">
-                        ADMIN
-                    </span>
-                    
-                    <button x-show="isAdminMode" @click="exitAdmin" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 border border-gray-200 shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                        返回首页
-                    </button>
-                </div>
-            </header>
-
-            <div x-show="!isAdminMode" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4">
-                <div class="flex p-1 bg-gray-100/50 rounded-xl mb-8 w-fit mx-auto border border-gray-200/50">
-                    <button class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
-                            :class="activeTab === 'img2base' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-                            @click="activeTab = 'img2base'">
-                        <span>🖼️</span> 图片转 Base64
-                    </button>
-                    <button class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
-                            :class="activeTab === 'base2img' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
-                            @click="activeTab = 'base2img'">
-                        <span>📝</span> Base64 转图片
-                    </button>
-                </div>
-
-                <div x-show="activeTab === 'img2base'">
-                    <div x-show="needsCaptcha" class="mb-6 mx-auto w-fit bg-yellow-50/90 backdrop-blur border border-yellow-200 p-4 rounded-xl shadow-sm text-center">
-                        <p class="text-sm text-yellow-800 mb-2 font-medium">🛡️ 安全检查</p>
-                        <div id="cf-turnstile-container"></div>
+            <div class="glass-card w-full max-w-4xl rounded-3xl p-6 md:p-10 transition-all duration-300 transform"
+                 :style="'--opacity: ' + config.card_opacity">
+                
+                <header class="flex justify-between items-center mb-8 select-none">
+                    <div class="flex items-center gap-3 cursor-pointer group" @click="handleTitleClick()">
+                        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900 tracking-tight" x-text="config.site_name"></h1>
+                            <p class="text-xs text-gray-500 font-medium">Cloudflare Worker Powered</p>
+                        </div>
                     </div>
 
-                    <div class="relative group cursor-pointer"
-                         @dragover.prevent="dragOver = true"
-                         @dragleave.prevent="dragOver = false"
-                         @drop.prevent="handleDrop($event)"
-                         @click="$refs.fileInput.click()">
+                    <div class="flex items-center gap-3 pr-8 md:pr-0"> <span x-show="isAdminMode" class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full border border-blue-200 animate-pulse">
+                            ADMIN
+                        </span>
                         
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
-                        
-                        <div class="relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-200 bg-white/40 overflow-hidden"
-                             :class="dragOver ? 'border-blue-500 bg-blue-50/50 scale-[1.01]' : 'border-gray-300 hover:border-blue-400 hover:bg-white/60'">
+                        <button x-show="isAdminMode" @click="exitAdmin" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 border border-gray-200 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                            <span class="hidden sm:inline">首页</span>
+                        </button>
+                    </div>
+                </header>
+
+                <div x-show="!isAdminMode" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4">
+                    <div class="flex p-1 bg-gray-100/50 rounded-xl mb-8 w-fit mx-auto border border-gray-200/50">
+                        <button class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                                :class="activeTab === 'img2base' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                                @click="activeTab = 'img2base'">
+                            <span>🖼️</span> 图片转 Base64
+                        </button>
+                        <button class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                                :class="activeTab === 'base2img' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                                @click="activeTab = 'base2img'">
+                            <span>📝</span> Base64 转图片
+                        </button>
+                    </div>
+
+                    <div x-show="activeTab === 'img2base'">
+                        <div x-show="needsCaptcha" class="mb-6 mx-auto w-fit bg-yellow-50/90 backdrop-blur border border-yellow-200 p-4 rounded-xl shadow-sm text-center">
+                            <p class="text-sm text-yellow-800 mb-2 font-medium">🛡️ 安全检查</p>
+                            <div id="cf-turnstile-container"></div>
+                        </div>
+
+                        <div class="relative group cursor-pointer"
+                             @dragover.prevent="dragOver = true"
+                             @dragleave.prevent="dragOver = false"
+                             @drop.prevent="handleDrop($event)"
+                             @click="$refs.fileInput.click()">
                             
-                            <input type="file" x-ref="fileInput" class="hidden" accept="image/*" @change="handleFileSelect">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
                             
-                            <div x-show="!previewUrl" class="space-y-3 pointer-events-none">
-                                <div class="w-16 h-16 bg-blue-100/50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <div class="relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-200 bg-white/40 overflow-hidden"
+                                 :class="dragOver ? 'border-blue-500 bg-blue-50/50 scale-[1.01]' : 'border-gray-300 hover:border-blue-400 hover:bg-white/60'">
+                                
+                                <input type="file" x-ref="fileInput" class="hidden" accept="image/*" @change="handleFileSelect">
+                                
+                                <div x-show="!previewUrl" class="space-y-3 pointer-events-none">
+                                    <div class="w-16 h-16 bg-blue-100/50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-700">点击上传 或 拖拽图片</h3>
+                                    <p class="text-sm text-gray-500">支持直接粘贴 (Ctrl+V)</p>
                                 </div>
-                                <h3 class="text-lg font-semibold text-gray-700">点击上传 或 拖拽图片</h3>
-                                <p class="text-sm text-gray-500">支持直接粘贴 (Ctrl+V)</p>
-                            </div>
 
-                            <div x-show="previewUrl" class="relative inline-block group/preview">
-                                <img :src="previewUrl" class="max-h-64 rounded-lg shadow-lg object-contain bg-checkerboard">
-                                <button @click.stop="clearImage" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transform hover:scale-110 transition-all z-10">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                <div x-show="previewUrl" class="relative inline-block group/preview">
+                                    <img :src="previewUrl" class="max-h-64 rounded-lg shadow-lg object-contain bg-checkerboard">
+                                    <button @click.stop="clearImage" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transform hover:scale-110 transition-all z-10">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex items-center gap-3">
+                            <div class="flex-1 relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔗</span>
+                                <input type="text" x-model="imageUrlInput" @keyup.enter="convertFromUrl"
+                                       placeholder="输入图片直链 URL (https://...)" 
+                                       class="glass-input w-full pl-11 pr-4 py-3 rounded-xl outline-none text-sm font-medium text-gray-700 placeholder-gray-400">
+                            </div>
+                            <button @click="convertFromUrl" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/30 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                                    :disabled="loading || !imageUrlInput">
+                                <span x-show="!loading">转换</span>
+                                <div x-show="loading" class="spinner"></div>
+                            </button>
+                        </div>
+
+                        <div x-show="base64Result" class="mt-8 animate-fade-in-up" x-transition>
+                            <div class="flex justify-between items-center mb-2 px-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Base64 结果</label>
+                                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md border border-gray-200" x-text="'长度: ' + base64Result.length"></span>
+                            </div>
+                            <div class="relative group">
+                                <textarea x-model="base64Result" readonly rows="5" 
+                                          class="glass-input w-full p-4 rounded-xl text-xs font-mono text-gray-600 resize-none outline-none"></textarea>
+                                <button @click="copyToClipboard" 
+                                        class="absolute top-3 right-3 bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:text-blue-600 px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100">
+                                    <span x-text="copyBtnText"></span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 flex items-center gap-3">
-                        <div class="flex-1 relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔗</span>
-                            <input type="text" x-model="imageUrlInput" @keyup.enter="convertFromUrl"
-                                   placeholder="输入图片直链 URL (https://...)" 
-                                   class="glass-input w-full pl-11 pr-4 py-3 rounded-xl outline-none text-sm font-medium text-gray-700 placeholder-gray-400">
-                        </div>
-                        <button @click="convertFromUrl" 
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg shadow-blue-500/30 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
-                                :disabled="loading || !imageUrlInput">
-                            <span x-show="!loading">转换</span>
-                            <div x-show="loading" class="spinner"></div>
-                        </button>
-                    </div>
-
-                    <div x-show="base64Result" class="mt-8 animate-fade-in-up" x-transition>
-                        <div class="flex justify-between items-center mb-2 px-1">
-                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Base64 结果</label>
-                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md border border-gray-200" x-text="'长度: ' + base64Result.length"></span>
-                        </div>
-                        <div class="relative group">
-                            <textarea x-model="base64Result" readonly rows="5" 
-                                      class="glass-input w-full p-4 rounded-xl text-xs font-mono text-gray-600 resize-none outline-none"></textarea>
-                            <button @click="copyToClipboard" 
-                                    class="absolute top-3 right-3 bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:text-blue-600 px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-all flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100">
-                                <span x-text="copyBtnText"></span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div x-show="activeTab === 'base2img'" x-cloak>
-                    <textarea x-model="base64Input" placeholder="在此粘贴 Base64 字符串..." rows="6" 
-                              class="glass-input w-full p-4 rounded-xl font-mono text-xs text-gray-700 outline-none resize-none"></textarea>
-                    
-                    <div x-show="base64Input" class="mt-6 bg-white/50 border border-gray-200 rounded-xl p-6 text-center" x-transition>
-                        <p class="text-xs text-gray-500 mb-4 uppercase tracking-wide font-bold">解码预览</p>
-                        <div class="inline-block relative shadow-lg rounded-lg overflow-hidden bg-checkerboard">
-                            <img :src="formattedBase64" class="max-w-full max-h-[400px] block object-contain">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div x-show="isAdminMode" x-cloak class="space-y-8 animate-fade-in">
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-100 shadow-sm">
-                        <div class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">总转换次数</div>
-                        <div class="text-3xl font-black text-gray-800" x-text="stats.convertCount || 0">0</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-2xl border border-green-100 shadow-sm">
-                        <div class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">今日验证 IP</div>
-                        <div class="text-3xl font-black text-gray-800" x-text="stats.verifyCount || 0">0</div>
-                    </div>
-                </div>
-
-                <form @submit.prevent="saveConfig" class="space-y-6">
-                    <div class="bg-white/40 rounded-2xl p-6 border border-white/50 relative overflow-hidden">
-                        <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-200/50 pb-2">🎨 界面外观</h3>
+                    <div x-show="activeTab === 'base2img'" x-cloak>
+                        <textarea x-model="base64Input" placeholder="在此粘贴 Base64 字符串..." rows="6" 
+                                  class="glass-input w-full p-4 rounded-xl font-mono text-xs text-gray-700 outline-none resize-none"></textarea>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="col-span-1">
-                                <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">网站标题</label>
-                                <input type="text" x-model="adminConfig.site_name" class="glass-input w-full rounded-lg p-2.5 text-sm">
+                        <div x-show="base64Input" class="mt-6 bg-white/50 border border-gray-200 rounded-xl p-6 text-center" x-transition>
+                            <p class="text-xs text-gray-500 mb-4 uppercase tracking-wide font-bold">解码预览</p>
+                            <div class="inline-block relative shadow-lg rounded-lg overflow-hidden bg-checkerboard">
+                                <img :src="formattedBase64" class="max-w-full max-h-[400px] block object-contain">
                             </div>
-                            <div class="col-span-1">
-                                <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">卡片透明度 (0.1 - 1.0)</label>
-                                <input type="number" step="0.1" min="0.1" max="1.0" x-model="adminConfig.card_opacity" class="glass-input w-full rounded-lg p-2.5 text-sm">
-                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="isAdminMode" x-cloak class="space-y-8 animate-fade-in">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-100 shadow-sm">
+                            <div class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">总转换次数</div>
+                            <div class="text-3xl font-black text-gray-800" x-text="stats.convertCount || 0">0</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-2xl border border-green-100 shadow-sm">
+                            <div class="text-gray-500 text-xs uppercase font-bold tracking-wider mb-1">今日验证 IP</div>
+                            <div class="text-3xl font-black text-gray-800" x-text="stats.verifyCount || 0">0</div>
+                        </div>
+                    </div>
+
+                    <form @submit.prevent="saveConfig" class="space-y-6">
+                        <div class="bg-white/40 rounded-2xl p-6 border border-white/50 relative overflow-hidden">
+                            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-200/50 pb-2">🎨 界面外观</h3>
                             
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">背景图片 URL</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">网站标题</label>
+                                    <input type="text" x-model="adminConfig.site_name" class="glass-input w-full rounded-lg p-2.5 text-sm">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">卡片透明度 (0.1 - 1.0)</label>
+                                    <input type="number" step="0.1" min="0.1" max="1.0" x-model="adminConfig.card_opacity" class="glass-input w-full rounded-lg p-2.5 text-sm">
+                                </div>
                                 
-                                <input type="text" x-model="adminConfig.bg_url" placeholder="https://..." class="glass-input w-full rounded-lg p-2.5 text-sm font-mono text-gray-600 mb-2">
-                                
-                                <div x-show="adminConfig.bg_url" class="mt-2">
-                                    <p class="text-[10px] text-gray-400 mb-1 ml-1">预览效果 (点击放大):</p>
-                                    <div class="w-[150px] h-[150px] rounded-xl overflow-hidden border-2 border-white shadow-md cursor-zoom-in bg-gray-100 transition-all hover:shadow-lg group" @click="showBgPreview = true" title="点击查看大图">
-                                        <img :src="adminConfig.bg_url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">背景图片 URL</label>
+                                    
+                                    <input type="text" x-model="adminConfig.bg_url" placeholder="https://..." class="glass-input w-full rounded-lg p-2.5 text-sm font-mono text-gray-600 mb-2">
+                                    
+                                    <div x-show="adminConfig.bg_url" class="mt-2 text-center">
+                                        <div class="inline-block relative">
+                                            <p class="text-[10px] text-gray-400 mb-1 text-left">预览效果 (点击放大):</p>
+                                            <div class="w-[150px] h-[150px] mx-auto rounded-xl overflow-hidden border-2 border-white shadow-md cursor-zoom-in bg-gray-100 transition-all hover:shadow-lg group" @click="showBgPreview = true" title="点击查看大图">
+                                                <img :src="adminConfig.bg_url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="bg-white/40 rounded-2xl p-6 border border-white/50">
-                        <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-200/50 pb-2">🔑 账户设置</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">修改管理员密码</label>
-                                <input type="text" x-model="adminConfig.admin_password" class="glass-input w-full rounded-lg p-2.5 text-sm font-mono text-blue-600 font-bold" placeholder="留空则不修改">
+                        <div class="bg-white/40 rounded-2xl p-6 border border-white/50">
+                            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-200/50 pb-2">🔑 账户设置</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">修改管理员密码</label>
+                                    <input type="text" x-model="adminConfig.admin_password" class="glass-input w-full rounded-lg p-2.5 text-sm font-mono text-blue-600 font-bold" placeholder="留空则不修改">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="bg-white/40 rounded-2xl p-6 border border-white/50">
-                        <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-200/50 pb-2">🛡️ 人机验证 (Turnstile)</h3>
-                        <div class="mb-4">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" x-model="adminConfig.turnstile_enabled_bool" class="sr-only peer">
-                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                <span class="ms-3 text-sm font-medium text-gray-700">启用 Cloudflare Turnstile</span>
-                            </label>
+                        <div class="bg-white/40 rounded-2xl p-6 border border-white/50">
+                            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-200/50 pb-2">🛡️ 人机验证 (Turnstile)</h3>
+                            <div class="mb-4">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="adminConfig.turnstile_enabled_bool" class="sr-only peer">
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                                    <span class="ms-3 text-sm font-medium text-gray-700">启用 Cloudflare Turnstile</span>
+                                </label>
+                            </div>
+                            <div x-show="adminConfig.turnstile_enabled_bool" class="grid grid-cols-1 gap-4" x-transition>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Site Key</label>
+                                    <input type="text" x-model="adminConfig.turnstile_site_key" class="glass-input w-full rounded-lg p-2.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Secret Key</label>
+                                    <input type="text" x-model="adminConfig.turnstile_secret_key" class="glass-input w-full rounded-lg p-2.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">频率策略</label>
+                                    <select x-model="adminConfig.turnstile_mode" class="glass-input w-full rounded-lg p-2.5 text-sm">
+                                        <option value="always">每次操作都验证</option>
+                                        <option value="daily">每个 IP 每天仅一次</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div x-show="adminConfig.turnstile_enabled_bool" class="grid grid-cols-1 gap-4" x-transition>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Site Key</label>
-                                <input type="text" x-model="adminConfig.turnstile_site_key" class="glass-input w-full rounded-lg p-2.5 text-xs font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">Secret Key</label>
-                                <input type="text" x-model="adminConfig.turnstile_secret_key" class="glass-input w-full rounded-lg p-2.5 text-xs font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1.5 ml-1">频率策略</label>
-                                <select x-model="adminConfig.turnstile_mode" class="glass-input w-full rounded-lg p-2.5 text-sm">
-                                    <option value="always">每次操作都验证</option>
-                                    <option value="daily">每个 IP 每天仅一次</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="flex justify-end pt-4">
-                        <button type="submit" class="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xl shadow-gray-500/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 flex items-center gap-2" :disabled="saving">
-                            <svg x-show="!saving" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                            <div x-show="saving" class="spinner w-4 h-4"></div>
-                            <span x-text="saving ? '保存中...' : '保存配置'"></span>
-                        </button>
-                    </div>
-                </form>
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" class="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-xl text-sm font-bold shadow-xl shadow-gray-500/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 flex items-center gap-2" :disabled="saving">
+                                <svg x-show="!saving" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                                <div x-show="saving" class="spinner w-4 h-4"></div>
+                                <span x-text="saving ? '保存中...' : '保存配置'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
