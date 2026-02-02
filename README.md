@@ -1,4 +1,4 @@
-# 🔮 Glass64 - 极简 Base64 转换工具
+# 🔮 Img-C-Base64 - 极简 Base64 转换工具
 
 > 一个部署在 Cloudflare Workers 上的全栈图片转换工具。无需服务器，磨砂玻璃 UI，内置后台管理与 D1 数据统计。
 
