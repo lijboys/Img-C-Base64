@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker - Glass64 (Grid Style & i18n)
+ * Cloudflare Worker - Glass64 Pro (Full i18n & Navigation Fix)
  * 环境变量要求: DB (绑定到 D1 数据库)
  */
 
@@ -41,7 +41,7 @@ async function handleHtml(request, env) {
         [x-cloak] { display: none !important; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         
-        /* 1. 网格背景核心样式 */
+        /* 网格背景 */
         .bg-grid-pattern {
             background-color: #ffffff;
             background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
@@ -51,19 +51,16 @@ async function handleHtml(request, env) {
             -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, transparent 100%);
         }
 
-        /* 渐变文字 */
         .text-gradient {
             background: linear-gradient(to right, #2563eb, #9333ea);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* 滚动条优化 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
 
-        /* 卡片磨砂 */
         .glass-panel {
             background: rgba(255, 255, 255, var(--opacity, 0.9));
             backdrop-filter: blur(12px);
@@ -87,15 +84,21 @@ async function handleHtml(request, env) {
     <div class="absolute inset-0 bg-grid-pattern z-0 pointer-events-none"></div>
     
     <header class="relative z-50 w-full max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div class="flex items-center gap-2 cursor-pointer" @click="handleTitleClick()">
-            <div class="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center font-bold text-lg">G</div>
-            <span class="text-xl font-bold tracking-tight text-slate-900" x-text="config.site_name"></span>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 cursor-pointer" @click="goHome()">
+                <div class="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center font-bold text-lg">G</div>
+                <span class="text-xl font-bold tracking-tight text-slate-900 hidden sm:block" x-text="config.site_name"></span>
+            </div>
+            
+            <button @click="goHome()" class="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors" :title="t('back_home')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            </button>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
             
             <a href="https://github.com/lijboys/Img-C-Base64" target="_blank" 
-               class="flex items-center gap-3 bg-[#111] hover:bg-black text-white px-4 py-1.5 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 group">
+               class="hidden md:flex items-center gap-3 bg-[#111] hover:bg-black text-white px-4 py-1.5 rounded-full transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 group">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
                 <div class="flex flex-col items-start leading-none">
                     <span class="text-[10px] text-gray-400 font-medium" x-text="t('star_on_github')"></span>
@@ -110,8 +113,8 @@ async function handleHtml(request, env) {
                       :class="lang === 'zh' ? 'bg-white shadow text-black' : 'text-gray-400'">中</span>
             </button>
 
-            <button x-show="isAdminMode" @click="exitAdmin" class="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors">
-                <span x-text="t('exit')"></span>
+            <button x-show="isAdminMode" @click="logout" class="text-sm font-medium text-red-500 hover:text-red-700 transition-colors px-2">
+                <span x-text="t('exit_logout')"></span>
             </button>
         </div>
     </header>
@@ -207,8 +210,8 @@ async function handleHtml(request, env) {
 
                             <div x-show="base64Result" class="mt-8 animate-fade-in-up">
                                 <div class="flex justify-between items-center mb-2 px-1">
-                                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Base64 Output</label>
-                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200" x-text="'Length: ' + base64Result.length"></span>
+                                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider" x-text="t('base64_output')"></label>
+                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200" x-text="t('length') + ': ' + base64Result.length"></span>
                                 </div>
                                 <div class="relative group">
                                     <textarea x-model="base64Result" readonly rows="5" 
@@ -226,7 +229,7 @@ async function handleHtml(request, env) {
                                       class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono text-gray-600 resize-none outline-none focus:border-blue-500 transition-colors"></textarea>
                             
                             <div x-show="base64Input" class="mt-6 border border-gray-200 rounded-xl p-6 text-center bg-white" x-transition>
-                                <p class="text-xs text-gray-400 mb-4 uppercase font-bold tracking-wider">Preview</p>
+                                <p class="text-xs text-gray-400 mb-4 uppercase font-bold tracking-wider" x-text="t('preview')"></p>
                                 <div class="inline-block relative shadow-lg rounded-lg overflow-hidden bg-checkerboard">
                                     <img :src="formattedBase64" class="max-w-full max-h-[400px] block object-contain">
                                 </div>
@@ -251,15 +254,15 @@ async function handleHtml(request, env) {
                                 <h3 class="font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2" x-text="t('settings_ui')"></h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Site Title</label>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1" x-text="t('label_site_name')"></label>
                                         <input type="text" x-model="adminConfig.site_name" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Card Opacity</label>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1" x-text="t('label_opacity')"></label>
                                         <input type="number" step="0.1" min="0.1" max="1.0" x-model="adminConfig.card_opacity" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors">
                                     </div>
                                     <div class="md:col-span-2">
-                                        <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">Background Image URL</label>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1" x-text="t('label_bg_url')"></label>
                                         <input type="text" x-model="adminConfig.bg_url" placeholder="https://..." class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-mono text-gray-600 mb-2 outline-none focus:border-blue-500 transition-colors">
                                         <div x-show="adminConfig.bg_url" class="mt-2 text-center">
                                             <div class="inline-block relative group cursor-pointer" @click="showBgPreview = true">
@@ -278,33 +281,42 @@ async function handleHtml(request, env) {
                             <div>
                                 <h3 class="font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2" x-text="t('settings_account')"></h3>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1">New Password</label>
-                                    <input type="text" x-model="adminConfig.admin_password" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-mono text-blue-600" placeholder="Leave empty to keep current">
+                                    <label class="block text-xs font-bold text-gray-500 mb-1.5 ml-1" x-text="t('label_new_pass')"></label>
+                                    <input type="text" x-model="adminConfig.admin_password" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-mono text-blue-600" :placeholder="t('placeholder_pass')">
                                 </div>
                             </div>
 
                             <div>
-                                <h3 class="font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">Turnstile</h3>
+                                <h3 class="font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2" x-text="t('settings_turnstile')"></h3>
                                 <div class="mb-4">
                                     <label class="inline-flex items-center cursor-pointer">
                                         <input type="checkbox" x-model="adminConfig.turnstile_enabled_bool" class="sr-only peer">
                                         <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-black after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                        <span class="ms-3 text-sm font-bold text-gray-600">Enable Turnstile</span>
+                                        <span class="ms-3 text-sm font-bold text-gray-600" x-text="t('enable_turnstile')"></span>
                                     </label>
                                 </div>
                                 <div x-show="adminConfig.turnstile_enabled_bool" class="grid grid-cols-1 gap-4">
-                                    <input type="text" x-model="adminConfig.turnstile_site_key" placeholder="Site Key" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-xs font-mono">
-                                    <input type="text" x-model="adminConfig.turnstile_secret_key" placeholder="Secret Key" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-xs font-mono">
-                                    <select x-model="adminConfig.turnstile_mode" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm">
-                                        <option value="always">Verify Every Time</option>
-                                        <option value="daily">Verify Once Per Day (IP)</option>
-                                    </select>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1 ml-1" x-text="t('site_key')"></label>
+                                        <input type="text" x-model="adminConfig.turnstile_site_key" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1 ml-1" x-text="t('secret_key')"></label>
+                                        <input type="text" x-model="adminConfig.turnstile_secret_key" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-xs font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1 ml-1" x-text="t('verify_mode')"></label>
+                                        <select x-model="adminConfig.turnstile_mode" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm">
+                                            <option value="always" x-text="t('mode_always')"></option>
+                                            <option value="daily" x-text="t('mode_daily')"></option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="flex justify-end pt-4">
                                 <button type="submit" class="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-95 flex items-center gap-2" :disabled="saving">
-                                    <span x-text="saving ? 'Saving...' : t('save_config')"></span>
+                                    <span x-text="saving ? t('saving') : t('save_config')"></span>
                                 </button>
                             </div>
                         </form>
@@ -322,9 +334,9 @@ async function handleHtml(request, env) {
 
     <div x-show="showLogin" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm" @click="showLogin = false">
         <div class="bg-white rounded-2xl p-8 w-80 shadow-2xl animate-fade-in-up" @click.stop>
-            <h3 class="text-xl font-black text-center mb-6">Admin Login</h3>
-            <input type="password" x-model="loginPassword" @keyup.enter="login" placeholder="Password" class="w-full bg-gray-50 border border-gray-200 text-center rounded-xl p-3 mb-4 outline-none focus:border-black transition-colors">
-            <button @click="login" class="w-full bg-black text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition-all">Verify</button>
+            <h3 class="text-xl font-black text-center mb-6" x-text="t('admin_login')"></h3>
+            <input type="password" x-model="loginPassword" @keyup.enter="login" :placeholder="t('password')" class="w-full bg-gray-50 border border-gray-200 text-center rounded-xl p-3 mb-4 outline-none focus:border-black transition-colors">
+            <button @click="login" class="w-full bg-black text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition-all" x-text="t('verify')"></button>
         </div>
     </div>
 
@@ -333,10 +345,12 @@ async function handleHtml(request, env) {
     </div>
 
     <script>
+        // 完整的国际化字典
         const i18n = {
             zh: {
                 star_on_github: '在 GitHub 上加星',
-                exit: '退出',
+                back_home: '返回首页',
+                exit_logout: '退出登录',
                 welcome_1: '欢迎来到',
                 welcome_2: '',
                 subtitle: '立即转换您的图片。本地处理，隐私安全，即时可用。',
@@ -348,16 +362,36 @@ async function handleHtml(request, env) {
                 url_placeholder: '输入图片直链 URL (https://...)',
                 convert_btn: '开始转换',
                 base64_placeholder: '在此粘贴 Base64 字符串...',
+                base64_output: 'Base64 结果',
+                length: '长度',
+                preview: '预览结果',
                 stat_total: '总转换次数',
                 stat_ip: '今日验证 IP',
                 admin_panel: '系统配置',
+                admin_login: '管理员登录',
+                password: '密码',
+                verify: '验证',
                 settings_ui: '界面外观',
+                label_site_name: '网站标题',
+                label_opacity: '卡片透明度',
+                label_bg_url: '背景图片链接',
                 settings_account: '账户设置',
-                save_config: '保存配置'
+                label_new_pass: '修改管理员密码',
+                placeholder_pass: '留空则不修改',
+                settings_turnstile: 'CF小组件验证', // 特殊修改
+                enable_turnstile: '开启 CF 小组件验证', // 特殊修改
+                site_key: 'Site Key',
+                secret_key: 'Secret Key',
+                verify_mode: '验证频率',
+                mode_always: '每次都验证',
+                mode_daily: '每天验证一次 (IP)',
+                save_config: '保存配置',
+                saving: '保存中...'
             },
             en: {
                 star_on_github: 'Star on GitHub',
-                exit: 'Exit',
+                back_home: 'Home',
+                exit_logout: 'Logout',
                 welcome_1: 'Welcome to',
                 welcome_2: '',
                 subtitle: 'Convert your images instantly. Local processing, secure, and fast.',
@@ -369,12 +403,31 @@ async function handleHtml(request, env) {
                 url_placeholder: 'Enter image direct URL (https://...)',
                 convert_btn: 'Convert',
                 base64_placeholder: 'Paste Base64 string here...',
+                base64_output: 'Base64 Output',
+                length: 'Length',
+                preview: 'Preview',
                 stat_total: 'Total Conversions',
                 stat_ip: 'Verified IPs Today',
                 admin_panel: 'Configuration',
+                admin_login: 'Admin Login',
+                password: 'Password',
+                verify: 'Verify',
                 settings_ui: 'Interface',
+                label_site_name: 'Site Title',
+                label_opacity: 'Card Opacity',
+                label_bg_url: 'Background Image URL',
                 settings_account: 'Account',
-                save_config: 'Save Changes'
+                label_new_pass: 'New Password',
+                placeholder_pass: 'Leave empty to keep current',
+                settings_turnstile: 'Turnstile',
+                enable_turnstile: 'Enable Turnstile',
+                site_key: 'Site Key',
+                secret_key: 'Secret Key',
+                verify_mode: 'Frequency',
+                mode_always: 'Verify Every Time',
+                mode_daily: 'Verify Once Per Day (IP)',
+                save_config: 'Save Changes',
+                saving: 'Saving...'
             }
         };
 
@@ -434,6 +487,20 @@ async function handleHtml(request, env) {
                     this.copyBtnText = this.lang === 'zh' ? '复制' : 'Copy';
                 },
 
+                // 切换到前台（保持登录）
+                goHome() {
+                    this.isAdminMode = false;
+                    window.history.pushState({}, '', '/');
+                },
+
+                // 彻底退出登录
+                logout() {
+                    localStorage.removeItem('admin_pass_cache');
+                    this.hasLocalAdmin = false;
+                    this.isAdminMode = false;
+                    window.location.href = '/';
+                },
+
                 handlePaste(e) {
                     if (this.activeTab !== 'img2base') return;
                     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -449,13 +516,10 @@ async function handleHtml(request, env) {
                 
                 processFile(file) {
                     if(this.needsCaptcha) { alert(this.t('captcha_required')); return; }
-                    
-                    // 核心：20MB 限制检查
                     if (file.size > 20 * 1024 * 1024) {
                         alert(this.lang === 'zh' ? '文件过大！请上传 20MB 以内的图片。' : 'File too large! Max 20MB allowed.');
                         return;
                     }
-
                     this.loading = true;
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -574,11 +638,6 @@ async function handleHtml(request, env) {
                     window.history.pushState({}, '', '/admin');
                 },
 
-                exitAdmin() {
-                    this.isAdminMode = false;
-                    window.history.pushState({}, '', '/');
-                },
-
                 async loadAdminData() {
                     const headers = { 'X-Admin-Auth': this.savedPassword };
                     const [conf, stat] = await Promise.all([
@@ -624,7 +683,7 @@ async function handleHtml(request, env) {
   return new Response(html, { headers: { 'Content-Type': 'text/html' } });
 }
 
-// API 逻辑保持不变
+// API 逻辑
 async function handleApi(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -635,15 +694,11 @@ async function handleApi(request, env) {
   if (path === '/api/convert-url' && request.method === 'POST') {
     try {
         const { url } = await request.json();
-        // 限制 URL 转换大小（防止服务器端压力）
         const imgRes = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 Worker' }});
         if (!imgRes.ok) throw new Error(`HTTP ${imgRes.status}`);
         
-        // 检查 Content-Length 头（如果存在）
         const contentLength = imgRes.headers.get('content-length');
-        if (contentLength && parseInt(contentLength) > 20 * 1024 * 1024) {
-             throw new Error('Image too large (>20MB)');
-        }
+        if (contentLength && parseInt(contentLength) > 20 * 1024 * 1024) throw new Error('Image too large (>20MB)');
 
         const buffer = await imgRes.arrayBuffer();
         if (buffer.byteLength > 20 * 1024 * 1024) throw new Error('Image too large (>20MB)');
