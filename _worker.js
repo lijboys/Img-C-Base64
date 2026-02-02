@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker - Base64 Pro (Floating Cat Ball Edition)
+ * Cloudflare Worker - Base64 Pro (Updated Link & Bright Default BG)
  * 环境变量要求: DB (绑定到 D1 数据库)
  */
 
@@ -97,9 +97,9 @@ async function handleHtml(request, env) {
       style="background-color: #f0f2f5; background-image: url('${config.bg_url || ''}'); background-size: cover; background-position: center;"
       x-data="app()">
 
-    <div class="absolute inset-0 bg-gradient-to-br from-slate-900/40 to-black/50 z-0 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-900/20 to-black/30 z-0 pointer-events-none"></div>
     
-    <a href="https://github.com/lijboys/img-Glass64" target="_blank" 
+    <a href="https://github.com/lijboys/Img-C-Base64" target="_blank" 
        class="fixed z-[100] top-4 right-4 md:top-6 md:right-6 w-11 h-11 md:w-14 md:h-14 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-2xl border border-white/60 transition-all duration-300 hover:scale-110 hover:rotate-12 group cursor-pointer float-anim"
        title="Star on GitHub">
         <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/40 to-transparent pointer-events-none"></div>
@@ -125,10 +125,10 @@ async function handleHtml(request, env) {
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3 pr-8 md:pr-0"> <span x-show="isAdminMode" class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full border border-blue-200 animate-pulse">
+                    <div class="flex items-center gap-3 pr-8 md:pr-0">
+                        <span x-show="isAdminMode" class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full border border-blue-200 animate-pulse">
                             ADMIN
                         </span>
-                        
                         <button x-show="isAdminMode" @click="exitAdmin" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 border border-gray-200 shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                             <span class="hidden sm:inline">首页</span>
@@ -677,7 +677,8 @@ async function handleApi(request, env) {
 }
 
 async function getConfig(env, includeSecrets) {
-    let config = { site_name: 'Base64 Tool', bg_url: '', card_opacity: '0.85' };
+    // [已修改] 使用新的明亮系默认背景图
+    let config = { site_name: 'Base64 Tool', bg_url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop', card_opacity: '0.85' };
     try {
         const { results } = await env.DB.prepare("SELECT * FROM config").all();
         if(results) config = results.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), config);
